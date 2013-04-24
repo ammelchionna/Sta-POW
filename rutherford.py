@@ -127,7 +127,16 @@ for theta in numpy.linspace(amin, amax, int((amax - amin) / astep) + 1): # do 5 
 
 if thelim < 179.0:
 
+    header = [
+            'theta'.rjust(6) + 'theta'.rjust(8) + 'theta'.rjust(8)  + 'dist of'.rjust(11)   +  'energy'.rjust(8) + 'dsigma/domega'.rjust(15) + 'dsigma/domega'.rjust(15) +  'dsigma/domega'.rjust(15) + 'beta'.rjust(8) + 'beta'.rjust(8) + 'time of flight'.rjust(16),
+            'scat '.rjust(6) + 'rec  '.rjust(8) + 'scat'.rjust(8)   + 'closest'.rjust(11)   +  'in lab'.rjust(8) + 'c.o.m.'.rjust(15)        + 'laboratory'.rjust(15)    +  'lab/c.o.m.'.rjust(15)    + 'scat'.rjust(8) + 'rec'.rjust(8)  + 'difference'.rjust(16),
+            'lab  '.rjust(6) + 'lab  '.rjust(8) + 'c.o.m.'.rjust(8) + 'appr (fm)'.rjust(11) +  '(MeV)'.rjust(8)  + '(mb/sr)'.rjust(15)       + '(mb/sr)'.rjust(15)       +  '(1)'.rjust(15)           + '(1)'.rjust(8)  + '(1)'.rjust(8)  + '(ns)'.rjust(16)
+             ]
+
     print 'SCATTERED particle, SECOND solution:'
+
+    for line in header:
+        print line
 
     for theta in numpy.linspace(amin, thelim, int((thelim - amin) / astep) + 1):
 
@@ -148,18 +157,22 @@ if thelim < 179.0:
 
         print '{0:6.2f}{1:8.2f}{2:8.2f}{3:11.2f}{4:8.2f}{5:15.2e}{6:15.2e}{7:15.2e}{8:8.3f}{9:8.3f}{10:16.2f}'.format(theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio)
 
-#     12 format('theta',4x,'theta',4x,'theta',4x,'dist of  ',1x,
-#        'energy',1x,'dsigma/domega',1x,'dsigma/domega',1x,
-#        'dsigma/domega')
-#     121format('rec  ',4x,'scat ',4x,'rec  ',4x,'closest  ',1x,
-#        'in lab',1x,'c.o.m.       ',1x,'laboratory   ',1x,
-#        'lab/c.o.m.   ')
-#     122format('lab  ',4x,'lab  ',4x,'c.o.m.',3x,'appr (fm)',1x,
-#        '(MeV) ',1x,'(mb/sr)      ',1x,'(mb/sr)      ',1x,
-#        '(1)          ')
+#     12 format('theta',4x,'theta',4x,'theta',4x,'dist of  ',1x,'energy',1x,'dsigma/domega',1x,'dsigma/domega',1x,'dsigma/domega')
+#     121format('rec  ',4x,'scat ',4x,'rec  ',4x,'closest  ',1x,'in lab',1x,'c.o.m.       ',1x,'laboratory   ',1x,'lab/c.o.m.   ')
+#     122format('lab  ',4x,'lab  ',4x,'c.o.m.',3x,'appr (fm)',1x,'(MeV) ',1x,'(mb/sr)      ',1x,'(mb/sr)      ',1x,'(1)          ')
 
 # Recoiling target.
+header = [
+        'theta'.rjust(6) + 'theta'.rjust(8) + 'theta'.rjust(8)  + 'dist of'.rjust(11)   +  'energy'.rjust(8) + 'dsigma/domega'.rjust(15) + 'dsigma/domega'.rjust(15) +  'dsigma/domega'.rjust(15) + 'beta'.rjust(8) + 'beta'.rjust(8) + 'time of flight'.rjust(16),
+        'rec'.rjust(6) + 'scat'.rjust(8) + 'rec'.rjust(8)   + 'closest'.rjust(11)   +  'in lab'.rjust(8) + 'c.o.m.'.rjust(15)        + 'laboratory'.rjust(15)    +  'lab/c.o.m.'.rjust(15)    + 'scat'.rjust(8) + 'rec'.rjust(8)  + 'difference'.rjust(16),
+        'lab  '.rjust(6) + 'lab  '.rjust(8) + 'c.o.m.'.rjust(8) + 'appr (fm)'.rjust(11) +  '(MeV)'.rjust(8)  + '(mb/sr)'.rjust(15)       + '(mb/sr)'.rjust(15)       +  '(1)'.rjust(15)           + '(1)'.rjust(8)  + '(1)'.rjust(8)  + '(ns)'.rjust(16)
+         ]
+
 print 'RECOILING particle:'
+
+for line in header:
+    print line
+
 for theta in numpy.linspace(amin, min(amax,89.), int((min(amax,89.) - amin) / astep) + 1):
     # theta is now RECOIL angle.
     e2 = e0*4.*am*math.cos(math.radians(theta))**2
@@ -185,61 +198,22 @@ for theta in numpy.linspace(amin, min(amax,89.), int((min(amax,89.) - amin) / as
     tcmscat=thetb+math.degrees(math.asin(a1*math.sin(math.radians(thetb))/a2))
     dca=l*(1.0+(1.0/math.sin(math.radians(tcmscat/2.0))))
 
-    # print theta,thetb,tcm,dca,e2,ruthc,ruthl,ratio
+    print '{0:6.2f}{1:8.2f}{2:8.2f}{3:11.2f}{4:8.2f}{5:15.2e}{6:15.2e}{7:15.2e}{8:8.3f}{9:8.3f}{10:16.2f}'.format(theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio,beta1,beta2,timdi)
 
     # Add to lists for delta-TOF plot:
     recoil_theta_list.append(theta)
     recoil_timdi_list.append(timdi)
 
 
-
 proj_plot = plt.plot(theta_list, timdi_list)
 rec_plot  = plt.plot(recoil_theta_list, recoil_timdi_list)
+
 # Use "proxy artist" (dummy, not plotted) to add a legend.
 proxy_p = plt.Rectangle((0, 0), 1, 1, fc="b")
 proxy_r = plt.Rectangle((0, 0), 1, 1, fc="g")
 plt.legend([proxy_p, proxy_r], ["projectile","target"])
-#plt.legend([proj_plot, rec_plot],["projectile","recoil"])
+
 plt.xlabel('scatter / recoil angle (deg)')
 plt.ylabel('time-of-flight difference (ns)')
 pylab.show()
-
-
-
-#  Rachel/rachel.py:                plt.text(text_coordinate_x, text_coordinate_y, yield_label, dict(color=circle_color, multialignment="right", rotation=text_angle))
-#  Rachel/rachel.py:                #plt.text(text_coordinate_x, text_coordinate_y, yield_label, dict(color=circle_color, multialignment="left", rotation=text_angle, rotation_mode = "anchor"))
-#      Rachel/rachel.py:                plt.annotate("", xy=(float_final_band_number,final_energy),  xycoords='data', xytext=(float_initial_band_number,initial_energy),\
-#              Rachel/rachel.py:                plt.text(text_coordinate_x, text_coordinate_y, yield_label, dict(color=arrow_color, multialignment="center", rotation=text_angle))
-#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
-#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
-#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
-#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
-#              Rachel/rachel.py:        plt.title(title)
-#              Rachel/rachel.py:        plt.xlabel(x_label)
-#              Rachel/rachel.py:        plt.ylabel(y_label)
-#              Rachel/rachel.py:            plt.ylim(low_y_plot_limit,high_y_plot_limit)
-#              Rachel/rachel.py:            plt.ylim(high_y_plot_limit,low_y_plot_limit)
-#              Rachel/rachel.py:        plt.xlim(low_x_plot_limit,high_x_plot_limit)
-#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
-#              Rachel/rachel.py:        plt.plot(wxlist,wylist,'r--')
-#              Rachel/rachel.py:        plt.semilogy()
-#              Rachel/rachel.py:        plt.scatter(spinlist,blist,s=25,c='r',marker=(0,3,0))
-#              Rachel/rachel.py:        plt.ylim(y_min,y_max)
-#              Rachel/rachel.py:        plt.xlim(x_min,x_max)
-#              Rachel/rachel.py:        plt.xlabel('Initial spin')
-#              Rachel/rachel.py:        plt.ylabel('B(ML;up)')
-#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
-#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
-#              Rachel/rachel.py:        plt.annotate(arrowlabel, xy=(x2,y2),  xycoords='data',
-#                  Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
-#                  Rachel/rachel.py:        plt.scatter(x_position,levelenergy,s=25,c=requestedcolor,marker=(0,3,0))
-#                  Rachel/rachel.py:            plt.annotate(comment, xy=(x_position,levelenergy),  xycoords='data',
-#                      Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
-#                      Rachel/rachel.py:        plt.xticks(numpy.arange(nbands + ASMIDGE),bandlabels)
-#                      Rachel/rachel.py:        plt.ylim(-maxenergy/5., 1.1*maxenergy)   # a little extra head room and room 
-#                      Rachel/rachel.py:        plt.xlim(0., nbands + 1.1)  # Add a little extra to round nbands up to next 
-#                      Rachel/rachel.py:            plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
-#                      Rachel/rachel.py:        lowlim,highlim = plt.ylim()
-# 
-# 
 
