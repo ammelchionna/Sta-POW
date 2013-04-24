@@ -83,20 +83,15 @@ print 'Maximum scattering angle in lab frame is ' + str(thelim) + ' degrees.'
 
 print 'Safe distance is ' + str(dsafe) + ' fm.'
 
-# 11 format('theta',4x,'theta',4x,'theta',4x,'dist of  ',1x,
-#    'energy',1x,'dsigma/domega',1x,'dsigma/domega',1x,
-#    'dsigma/domega',1x,'beta',7x,'beta',7x,'time of flight')
-# 111format('scat ',4x,'rec  ',4x,'scat ',4x,'closest  ',1x,
-#    'in lab',1x,'c.o.m.       ',1x,'laboratory   ',1x,
-#    'lab/c.o.m.   ',1x,'scat',7x,'rec ',7x,'difference    ')
-# 112format('lab  ',4x,'lab  ',4x,'c.o.m.',3x,'appr (fm)',1x,
-#    '(MeV) ',1x,'(mb/sr)      ',1x,'(mb/sr)      ',1x,
-#    '(1)          ',1x,'(1) ',7x,'(1) ',7x,'(ns)          ')
-#    write (1,113)
-# 113format('SCATTERED particle:')
-#    write (1,11)
-#    write (1,111)
-#    write (1,112)
+header = [
+        'theta'.rjust(6) + 'theta'.rjust(8) + 'theta'.rjust(8)  + 'dist of'.rjust(11)   +  'energy'.rjust(8) + 'dsigma/domega'.rjust(15) + 'dsigma/domega'.rjust(15) +  'dsigma/domega'.rjust(15) + 'beta'.rjust(8) + 'beta'.rjust(8) + 'time of flight'.rjust(16),
+        'scat '.rjust(6) + 'rec  '.rjust(8) + 'scat'.rjust(8)   + 'closest'.rjust(11)   +  'in lab'.rjust(8) + 'c.o.m.'.rjust(15)        + 'laboratory'.rjust(15)    +  'lab/c.o.m.'.rjust(15)    + 'scat'.rjust(8) + 'rec'.rjust(8)  + 'difference'.rjust(16),
+        'lab  '.rjust(6) + 'lab  '.rjust(8) + 'c.o.m.'.rjust(8) + 'appr (fm)'.rjust(11) +  '(MeV)'.rjust(8)  + '(mb/sr)'.rjust(15)       + '(mb/sr)'.rjust(15)       +  '(1)'.rjust(15)           + '(1)'.rjust(8)  + '(1)'.rjust(8)  + '(ns)'.rjust(16)
+         ]
+
+print 'SCATTERED particle:'
+for line in header:
+    print line
 
 for theta in numpy.linspace(amin, amax, (amax - amin) / astep): # do 5 i=1,istep          ! Step through scattering angles in lab frame.
     # Theta is scattering angle.
@@ -127,10 +122,7 @@ for theta in numpy.linspace(amin, amax, (amax - amin) / astep): # do 5 i=1,istep
 
     dca = l*(1.0+(1.0/math.sin(math.radians(tcm/2.0))))
 
-    # print theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio,beta1,beta2,timdi
-    print theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio,beta1,beta2,timdi
-# 77   format(f6.2,3x,f6.2,3x,f6.2,3x,f6.1,4x,f6.1,1x,
-#              e10.3,4x,e10.3,4x,e10.3,4x,e10.3,1x,e10.3,1x,e10.3)
+    print '{0:6.2f}{1:8.2f}{2:8.2f}{3:11.2f}{4:8.2f}{5:15.2e}{6:15.2e}{7:15.2e}{8:8.3f}{9:8.3f}{10:16.2f}'.format(theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio,beta1,beta2,timdi)
 
 
 if thelim < 179.0:
@@ -153,7 +145,8 @@ if thelim < 179.0:
         ratio=abs(ratio)
         ruthl=ruthc*ratio
         dca=l*(1.0+(1.0/math.sin(math.radians(tcm/2.0))))
-        # print theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio
+
+        print '{0:6.2f}{1:8.2f}{2:8.2f}{3:11.2f}{4:8.2f}{5:15.2e}{6:15.2e}{7:15.2e}{8:8.3f}{9:8.3f}{10:16.2f}'.format(theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio)
 
 #     12 format('theta',4x,'theta',4x,'theta',4x,'dist of  ',1x,
 #        'energy',1x,'dsigma/domega',1x,'dsigma/domega',1x,
