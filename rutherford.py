@@ -93,7 +93,7 @@ print 'SCATTERED particle:'
 for line in header:
     print line
 
-for theta in numpy.linspace(amin, amax, (amax - amin) / astep): # do 5 i=1,istep          ! Step through scattering angles in lab frame.
+for theta in numpy.linspace(amin, amax, int((amax - amin) / astep) + 1): # do 5 i=1,istep          ! Step through scattering angles in lab frame.
     # Theta is scattering angle.
     if theta >= thelim:
         break
@@ -129,7 +129,7 @@ if thelim < 179.0:
 
     print 'SCATTERED particle, SECOND solution:'
 
-    for theta in numpy.linspace(amin, thelim, (thelim - amin) / astep):
+    for theta in numpy.linspace(amin, thelim, int((thelim - amin) / astep) + 1):
 
         if theta == 0.0:
             continue
@@ -160,7 +160,7 @@ if thelim < 179.0:
 
 # Recoiling target.
 print 'RECOILING particle:'
-for theta in numpy.linspace(amin, min(amax,89.), (min(amax,89.) - amin) / astep):
+for theta in numpy.linspace(amin, min(amax,89.), int((min(amax,89.) - amin) / astep) + 1):
     # theta is now RECOIL angle.
     e2 = e0*4.*am*math.cos(math.radians(theta))**2
     tcm=math.degrees(math.acos(1.-2.*math.cos(math.radians(theta))**2))
@@ -192,13 +192,14 @@ for theta in numpy.linspace(amin, min(amax,89.), (min(amax,89.) - amin) / astep)
     recoil_timdi_list.append(timdi)
 
 
-for i in range(len(recoil_theta_list)):
-    print '(' + str(round(recoil_theta_list[i])) + ', ' + str(round(recoil_timdi_list[i])) + ')'
-for i in range(len(theta_list)):
-    print '(' + str(round(theta_list[i])) + ', ' + str(round(timdi_list[i])) + ')'
 
-the_plot = plt.plot(theta_list, timdi_list)
-the_plot = plt.plot(recoil_theta_list, recoil_timdi_list)
+proj_plot = plt.plot(theta_list, timdi_list)
+rec_plot  = plt.plot(recoil_theta_list, recoil_timdi_list)
+# Use "proxy artist" (dummy, not plotted) to add a legend.
+proxy_p = plt.Rectangle((0, 0), 1, 1, fc="b")
+proxy_r = plt.Rectangle((0, 0), 1, 1, fc="g")
+plt.legend([proxy_p, proxy_r], ["projectile","target"])
+#plt.legend([proj_plot, rec_plot],["projectile","recoil"])
 plt.xlabel('scatter / recoil angle (deg)')
 plt.ylabel('time-of-flight difference (ns)')
 pylab.show()
