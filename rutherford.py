@@ -1,12 +1,6 @@
 # Adam's version of ruthxx.f, original by Wu.
 #
-# Added Doug's "safe distance" and the distance of
-# closest approach.
-# Changed output format and updated fortran standards.
-# Jan. 10 2008.
-#
 # Time values are in ns.
-# VARIABLES:
 # ruthi - multiplicative constant for cross section function
 # The factor 1.296 converts the cross sections to millibarns (mb).
 # See my physics notebook.
@@ -21,217 +15,225 @@
 #         in fm.
 #---------------------------------------------------------------------------
 
-import matplotlib
+import math
+import numpy
+#import matplotlib
+import matplotlib.pyplot as plt
 import pylab
 
+# cnt is the angle of a normal from the target position to a planar detector.
+# disf is the distance along that normal from target to detector.
 
- 92   continue
+cnt  = 49.0  # degrees
+disf = 12.8  # cm
 
+def get_floats(prompt_string = ''):
+    temp_string = raw_input(prompt_string)
+    temp_string = temp_string.replace(',',' ')
+    temp_list   = temp_string.split()
+    return [float(i) for i in temp_list]
 
-      write(*,321)
- 321  format('Enter Zp,Ap (projectile), Zt,At (target) :',$)
-      read *,z1,a1,z2,a2
+# z1,a1,z2,a2 = get_floats('Enter Zp,Ap (projectile), Zt,At (target) : ')
+z1,a1,z2,a2 = 54., 136., 78., 194.
 
-      write(1,325)
- 325  format('Output from RUTHERFORD.FOR.')
-      write(1,*)''
-      write(1,323)
-      write(*,323)
- 323  format('Zp Ap  Zt At')
-      write(1,324)int(z1),int(a1),int(z2),int(a2)
-      write(*,324)int(z1),int(a1),int(z2),int(a2)
- 324  format(i2,1x,i3,1x,i2,1x,i3)
+const1 = math.cos(math.radians(cnt))
+const2 = math.sin(math.radians(cnt))
+consta = math.cos(math.radians(cnt + 90.))
+constb = math.sin(math.radians(cnt + 90.))
 
+#amin,amax,astep = get_floats('Enter angles--min, max, step: ')
+amin,amax,astep = 10., 170., 5.
 
-      cnt=49.0
-      disf=12.8
-      write(1,*)''
-      write(1,623) 
- 623  format('Set up for CHICO:')
-      write(1,624) cnt
- 624  format('     Angle to normal is ',f4.1,' degrees.')
-      write(1,625) disf
- 625  format('     Distance to detector is ',f4.1,' cm.')
+print 'Set up for CHICO:\nAngle to normal is ' + str(cnt) + ' degrees.\nDistance to detector is ' + str(disf) + ' degrees.'
 
-        const1 = cos(cnt/radtodeg)
-        const2 = sin(cnt/radtodeg)
-        consta = cos((cnt+90.)/radtodeg)
-        constb = sin((cnt+90.)/radtodeg)
+while True:
 
-      write(*,932)
- 932  format('Enter angles--min, max, step: ',$)
+    # Lists for d-TOF plot.
+    theta_list = []
+    timdi_list = []
+    recoil_theta_list = []
+    recoil_timdi_list = []
 
-      read *,amin,amax,astep
+    # e0 = float(raw_input('Enter beam energy in MeV: '))
+    e0 = 610.
+    print 'Beam energy is ' + str(e0) + ' MeV.'
 
-      write(*,223)amin,amax,astep
+    dsafe=1.25*(a1**(1.0/3.0)+a2**(1.0/3.0)) + 5.0  # Doug's safe criterion.
+    ecm=a2/(a1+a2)*e0
+    am=a1*a2/(a1+a2)**2
+    ruthi=(z1*z2)**2*1.296/ecm**2       # gives result in mb.
+    l=1.43990*z1*z2/(2*ecm)
 
-      write(1,*)''
- 223  format('Angles ',f5.1,' to ',f5.1,', step ',f5.1)
+    thelim=180.
+    if a1 >= a2:
+        thelim = math.radians(math.asin(a2/a1))
 
-      print *,' '
-      write(*,922)
- 922  format('Writing output to file "rutherford.dat".')
-      print *,' '
+    print 'Maximum scattering angle in lab frame is ' + str(thelim) + ' degrees.'
 
-      do ijkl=1,100000
+    print 'Safe distance is ' + str(dsafe) + ' fm.'
 
-        print *,'Enter beam energy, MeV (0 to exit, -1 to start over):'
-        read *,e0
-        IF(e0.eq.0.) CALL EXIT
-        if(e0.lt.0.) goto 92
-        write(*,420)e0
-        write(1,420)e0
- 420    format('Beam energy is ',f6.1,' MeV.')
+# 11 format('theta',4x,'theta',4x,'theta',4x,'dist of  ',1x,
+#    'energy',1x,'dsigma/domega',1x,'dsigma/domega',1x,
+#    'dsigma/domega',1x,'beta',7x,'beta',7x,'time of flight')
+# 111format('scat ',4x,'rec  ',4x,'scat ',4x,'closest  ',1x,
+#    'in lab',1x,'c.o.m.       ',1x,'laboratory   ',1x,
+#    'lab/c.o.m.   ',1x,'scat',7x,'rec ',7x,'difference    ')
+# 112format('lab  ',4x,'lab  ',4x,'c.o.m.',3x,'appr (fm)',1x,
+#    '(MeV) ',1x,'(mb/sr)      ',1x,'(mb/sr)      ',1x,
+#    '(1)          ',1x,'(1) ',7x,'(1) ',7x,'(ns)          ')
+#    write (1,113)
+# 113format('SCATTERED particle:')
+#    write (1,11)
+#    write (1,111)
+#    write (1,112)
 
-        istep=(amax-amin)/astep+1.0
+    for theta in numpy.linspace(amin, amax, (amax - amin) / astep): # do 5 i=1,istep          ! Step through scattering angles in lab frame.
+        # Theta is scattering angle.
+        if theta >= thelim:
+            break
 
-        dsafe=1.25*(a1**(1.0/3.0)+a2**(1.0/3.0)) + 5.0
-        ecm=a2/(a1+a2)*e0
-        am=a1*a2/(a1+a2)**2
-        ruthi=(z1*z2)**2*1.296/ecm**2       !gives result in mb.
-        l=1.43990*z1*z2/(2*ecm)
+        tcm = theta + math.degrees(math.asin(a1*math.sin(math.radians(theta))/a2))
+        thetb = (180.-tcm)/2.
+        ruthc = ruthi/math.sin(math.radians(tcm/2.))**4
+        e1 = e0*(1.-2.*am*(1.-math.cos(math.radians(tcm))))
+        ratio = math.sin(math.radians(tcm))**2/(math.cos(math.radians(tcm-theta)) *math.sin(math.radians(theta))**2)
+        ruthl = ruthc*ratio
+        thed1 =  const1*math.cos(math.radians(theta)) + const2*math.sin(math.radians(theta))
+        thed2 =  const1*math.cos(math.radians(thetb)) + const2*math.sin(math.radians(thetb))
+        if theta >= 90.0:
+            thed1 =  consta*math.cos(math.radians(theta)) + constb*math.sin(math.radians(theta))
+        dis1 = disf/ thed1
+        dis2 = disf/ thed2
+        beta1 = .046*math.sqrt(e1/a1)
+        beta2 = .046*math.sqrt((e0-e1)/a2)
+        tim_s = .0333564*dis1/beta1
+        tim_r = .0333564*dis2/beta2
+        timdi = tim_s-tim_r
 
-        thelim=180.
-        if(a1.ge.a2) thelim=asin(a2/a1)*radtodeg
+        # Add to lists for delta-TOF plot:
+        theta_list.append(theta)
+        timdi_list.append(timdi)
 
-        write(1,423)thelim
- 423    format('Maximum scattering angle in lab frame is ',
-     &    f7.3,' degrees.')
+        dca = l*(1.0+(1.0/math.sin(math.radians(tcm/2.0))))
 
-        write (1,424)dsafe
- 424    format('Safe distance is ',f5.2,' fm.')
-        write(1,*)''
-
-
- 11     format('theta',4x,'theta',4x,'theta',4x,'dist of  ',1x,
-     &  'energy',1x,'dsigma/domega',1x,'dsigma/domega',1x,
-     &  'dsigma/domega',1x,'beta',7x,'beta',7x,'time of flight')
- 111    format('scat ',4x,'rec  ',4x,'scat ',4x,'closest  ',1x,
-     &  'in lab',1x,'c.o.m.       ',1x,'laboratory   ',1x,
-     &  'lab/c.o.m.   ',1x,'scat',7x,'rec ',7x,'difference    ')
- 112    format('lab  ',4x,'lab  ',4x,'c.o.m.',3x,'appr (fm)',1x,
-     &  '(MeV) ',1x,'(mb/sr)      ',1x,'(mb/sr)      ',1x,
-     &  '(1)          ',1x,'(1) ',7x,'(1) ',7x,'(ns)          ')
-        write (1,113)
- 113    format('SCATTERED particle:')
-        write (1,11)
-        write (1,111)
-        write (1,112)
-
-          
-        do 5 i=1,istep          ! Step through scattering angles in lab frame.
-c         Theta is scattering angle.
-          z=i-1
-          theta=amin+astep*z
-          if(theta.eq.0.) go to 5
-          if(theta.ge.thelim) go to 45
-          tcm=theta+asin(a1*sin(theta/radtodeg)/a2)*radtodeg
-          thetb=(180.-tcm)/2.
-          ruthc=ruthi/sin((tcm/2.)/radtodeg)**4
-          e1=e0*(1.-2.*am*(1.-cos(tcm/radtodeg)))
-          ratio=sin(tcm/radtodeg)**2/(cos((tcm-theta)/radtodeg)
-     &      *sin(theta/radtodeg)**2)
-          ruthl=ruthc*ratio
-          thed1= const1*cos(theta/radtodeg) + const2*sin(theta/radtodeg)
-          thed2= const1*cos(thetb/radtodeg) + const2*sin(thetb/radtodeg)
-          if(theta.ge.90.)thed1= consta*cos(theta/radtodeg) 
-     &      + constb*sin(theta/radtodeg)
-          dis1=disf/ thed1
-          dis2=disf/ thed2
-          beta1=.046*sqrt(e1/a1)
-          beta2=.046*sqrt((e0-e1)/a2)
-          tim_s=.0333564*dis1/beta1
-          tim_r=.0333564*dis2/beta2
-          timdi=tim_s-tim_r
-          dca=l*(1.0+(1.0/sin((tcm/2.0)/radtodeg)))
+        # print theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio,beta1,beta2,timdi
+# 77   format(f6.2,3x,f6.2,3x,f6.2,3x,f6.1,4x,f6.1,1x,
+#              e10.3,4x,e10.3,4x,e10.3,4x,e10.3,1x,e10.3,1x,e10.3)
 
 
-          write(1,77)theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio,beta1,
-     &      beta2,timdi
- 77       format(f6.2,3x,f6.2,3x,f6.2,3x,f6.1,4x,f6.1,1x,
-     &          e10.3,4x,e10.3,4x,e10.3,4x,e10.3,1x,e10.3,1x,e10.3)
+    if thelim < 179.0:
 
- 5      continue
- 45     if(thelim.eq.180.) go to 50
+        print 'SCATTERED particle, SECOND solution:'
 
-        
-        write(1,117)
- 117    format('SCATTERED particle, SECOND solution:')
+        for theta in numpy.linspace(amin, thelim, (thelim - amin) / astep):
 
-        do 48 i=1,istep
-          z=i-1
-          theta=amin+astep*z
-          if(theta.eq.0.) go to 48
-          if(theta.ge.thelim) go to 50
-          tcm=theta-asin(a1*sin(theta/radtodeg)/a2)*radtodeg
-          tcm=180.-abs(tcm)
-          thetb=(180.-tcm)/2.
-          e1=e0*(1.-2.*am*(1.-cos(tcm/radtodeg)))
-          ruthc=ruthi/sin((tcm/2.)/radtodeg)**4
-          ratio=sin(tcm/radtodeg)**2/(sin(theta/radtodeg)**2
-     &      *cos((tcm-theta)/radtodeg))
-          ratio=abs(ratio)
-          ruthl=ruthc*ratio
-          dca=l*(1.0+(1.0/sin((tcm/2.0)/radtodeg)))
-          write(1,77)theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio
- 48     continue
+            if theta == 0.0:
+                continue
+            if theta >= thelim:
+                break
+            tcm=theta-math.degrees(math.asin(a1*math.sin(math.radians(theta))/a2))
+            tcm=180.-abs(tcm)
+            thetb=(180.-tcm)/2.
+            e1=e0*(1.-2.*am*(1.-math.cos(math.radians(tcm))))
+            ruthc=ruthi/math.sin(math.radians(tcm/2.))**4
+            ratio=math.sin(math.radians(tcm))**2/(math.sin(math.radians(theta))**2
+            *math.cos(math.radians(tcm-theta)))
+            ratio=abs(ratio)
+            ruthl=ruthc*ratio
+            dca=l*(1.0+(1.0/math.sin(math.radians(tcm/2.0))))
+            # print theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio
 
- 50     continue 
+#     12 format('theta',4x,'theta',4x,'theta',4x,'dist of  ',1x,
+#        'energy',1x,'dsigma/domega',1x,'dsigma/domega',1x,
+#        'dsigma/domega')
+#     121format('rec  ',4x,'scat ',4x,'rec  ',4x,'closest  ',1x,
+#        'in lab',1x,'c.o.m.       ',1x,'laboratory   ',1x,
+#        'lab/c.o.m.   ')
+#     122format('lab  ',4x,'lab  ',4x,'c.o.m.',3x,'appr (fm)',1x,
+#        '(MeV) ',1x,'(mb/sr)      ',1x,'(mb/sr)      ',1x,
+#        '(1)          ')
 
-        write(1,126)
- 126    format('RECOILING particle:')
- 12     format('theta',4x,'theta',4x,'theta',4x,'dist of  ',1x,
-     &  'energy',1x,'dsigma/domega',1x,'dsigma/domega',1x,
-     &  'dsigma/domega')
- 121    format('rec  ',4x,'scat ',4x,'rec  ',4x,'closest  ',1x,
-     &  'in lab',1x,'c.o.m.       ',1x,'laboratory   ',1x,
-     &  'lab/c.o.m.   ')
- 122    format('lab  ',4x,'lab  ',4x,'c.o.m.',3x,'appr (fm)',1x,
-     &  '(MeV) ',1x,'(mb/sr)      ',1x,'(mb/sr)      ',1x,
-     &  '(1)          ')
-        write (1,12)
-        write (1,121)
-        write (1,122)
+    # Recoiling target.
+    print 'RECOILING particle:'
+    for theta in numpy.linspace(amin, min(amax,89.), (min(amax,89.) - amin) / astep):
+        # theta is now RECOIL angle.
+        e2 = e0*4.*am*math.cos(math.radians(theta))**2
+        tcm=math.degrees(math.acos(1.-2.*math.cos(math.radians(theta))**2))
+        thetb=math.degrees(math.atan(math.sin(math.radians(2.*theta)) /(a1/a2-math.cos(2.*math.radians(theta)))))
+        if thetb < 0.0:
+            thetb=180.+thetb
+        ruthc=ruthi/math.sin(math.radians(tcm/2.))**4
+        ratio=4.*math.cos(math.radians(theta))
+        ruthl=ruthc*ratio
+        tcm=180.-tcm
+        thed1= const1*math.cos(math.radians(theta)) + const2*math.sin(math.radians(theta))
+        thed2= const1*math.cos(math.radians(thetb)) + const2*math.sin(math.radians(thetb))
+        if(thetb >= 90.0):
+            thed1= consta*math.cos(math.radians(thetb)) + constb*math.sin(math.radians(thetb))
+        dis1=disf/ thed1
+        dis2=disf/ thed2
+        beta1=.046*math.sqrt(e2/a2)
+        beta2=.046*math.sqrt((e0-e2)/a1)
+        tim_s=.0333564*dis1/beta1
+        tim_r=.0333564*dis2/beta2
+        timdi=tim_s-tim_r
+        tcmscat=thetb+math.degrees(math.asin(a1*math.sin(math.radians(thetb))/a2))
+        dca=l*(1.0+(1.0/math.sin(math.radians(tcmscat/2.0))))
 
-        do 60 i=1,istep ! Step through recoil angles in lab frame.
-c         Theta is now RECOIL angle.
-          z=i-1
-          theta=amin+astep*z
-          if(theta.eq.0.) go to 60
-          if(theta.ge.90.) go to 80
-          e2 = e0*4.*am*cos(theta/radtodeg)**2
-          tcm=acos(1.-2.*cos(theta/radtodeg)**2)*radtodeg
-          thetb=atan(sin((2.*theta)/radtodeg)
-     &      /(a1/a2-cos(2.*theta/radtodeg)))*radtodeg
-          if(thetb.lt.0.) thetb=180.+thetb
-          ruthc=ruthi/sin((tcm/2.)/radtodeg)**4
-          ratio=4.*cos(theta/radtodeg)
-          ruthl=ruthc*ratio
-          tcm=180.-tcm
-          thed1= const1*cos(theta/radtodeg) + const2*sin(theta/radtodeg)
-          thed2= const1*cos(thetb/radtodeg) + const2*sin(thetb/radtodeg)
-          if(thetb.ge.90.)thed1= consta*cos(thetb/radtodeg) 
-     &       + constb*sin(thetb/radtodeg)
-          dis1=disf/ thed1
-          dis2=disf/ thed2
-          beta1=.046*sqrt(e2/a2)
-          beta2=.046*sqrt((e0-e2)/a1)
-          tim_s=.0333564*dis1/beta1
-          tim_r=.0333564*dis2/beta2
-          timdi=tim_s-tim_r
-          tcmscat=thetb+asin(a1*sin(thetb/radtodeg)/a2)*radtodeg
-          dca=l*(1.0+(1.0/sin((tcmscat/2.0)/radtodeg)))
+        # print theta,thetb,tcm,dca,e2,ruthc,ruthl,ratio
 
-          write(1,77)theta,thetb,tcm,dca,e2,ruthc,ruthl,ratio
+        # Add to lists for delta-TOF plot:
+        recoil_theta_list.append(theta)
+        recoil_timdi_list.append(timdi)
 
- 60     continue
- 80     continue
 
-        write(1,872)
- 872    format(//,128('-'),//)
+    for i in range(len(recoil_theta_list)):
+        print '(' + str(round(recoil_theta_list[i])) + ', ' + str(round(recoil_timdi_list[i])) + ')'
+    for i in range(len(theta_list)):
+        print '(' + str(round(theta_list[i])) + ', ' + str(round(timdi_list[i])) + ')'
 
-        enddo  ! main loop
+    the_plot = plt.plot(theta_list, timdi_list)
+    the_plot = plt.plot(recoil_theta_list, recoil_timdi_list)
+    plt.xlabel('scatter / recoil angle (deg)')
+    plt.ylabel('time-of-flight difference (ns)')
+    pylab.show()
 
-      end
 
+
+#  Rachel/rachel.py:                plt.text(text_coordinate_x, text_coordinate_y, yield_label, dict(color=circle_color, multialignment="right", rotation=text_angle))
+#  Rachel/rachel.py:                #plt.text(text_coordinate_x, text_coordinate_y, yield_label, dict(color=circle_color, multialignment="left", rotation=text_angle, rotation_mode = "anchor"))
+#      Rachel/rachel.py:                plt.annotate("", xy=(float_final_band_number,final_energy),  xycoords='data', xytext=(float_initial_band_number,initial_energy),\
+#              Rachel/rachel.py:                plt.text(text_coordinate_x, text_coordinate_y, yield_label, dict(color=arrow_color, multialignment="center", rotation=text_angle))
+#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
+#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
+#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
+#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
+#              Rachel/rachel.py:        plt.title(title)
+#              Rachel/rachel.py:        plt.xlabel(x_label)
+#              Rachel/rachel.py:        plt.ylabel(y_label)
+#              Rachel/rachel.py:            plt.ylim(low_y_plot_limit,high_y_plot_limit)
+#              Rachel/rachel.py:            plt.ylim(high_y_plot_limit,low_y_plot_limit)
+#              Rachel/rachel.py:        plt.xlim(low_x_plot_limit,high_x_plot_limit)
+#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
+#              Rachel/rachel.py:        plt.plot(wxlist,wylist,'r--')
+#              Rachel/rachel.py:        plt.semilogy()
+#              Rachel/rachel.py:        plt.scatter(spinlist,blist,s=25,c='r',marker=(0,3,0))
+#              Rachel/rachel.py:        plt.ylim(y_min,y_max)
+#              Rachel/rachel.py:        plt.xlim(x_min,x_max)
+#              Rachel/rachel.py:        plt.xlabel('Initial spin')
+#              Rachel/rachel.py:        plt.ylabel('B(ML;up)')
+#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
+#              Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
+#              Rachel/rachel.py:        plt.annotate(arrowlabel, xy=(x2,y2),  xycoords='data',
+#                  Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
+#                  Rachel/rachel.py:        plt.scatter(x_position,levelenergy,s=25,c=requestedcolor,marker=(0,3,0))
+#                  Rachel/rachel.py:            plt.annotate(comment, xy=(x_position,levelenergy),  xycoords='data',
+#                      Rachel/rachel.py:        plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
+#                      Rachel/rachel.py:        plt.xticks(numpy.arange(nbands + ASMIDGE),bandlabels)
+#                      Rachel/rachel.py:        plt.ylim(-maxenergy/5., 1.1*maxenergy)   # a little extra head room and room 
+#                      Rachel/rachel.py:        plt.xlim(0., nbands + 1.1)  # Add a little extra to round nbands up to next 
+#                      Rachel/rachel.py:            plt.figure(LEVELSCHEMEFIGURE,figsize=LSFIGSIZE)
+#                      Rachel/rachel.py:        lowlim,highlim = plt.ylim()
+# 
+# 
 
