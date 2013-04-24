@@ -1,3 +1,4 @@
+#!/usr/bin/python
 # Adam's version of ruthxx.f, original by Wu.
 #
 # Time values are in ns.
@@ -20,7 +21,20 @@ import numpy
 #import matplotlib
 import matplotlib.pyplot as plt
 import pylab
+import sys
 
+# Check to see if the user gave command line arguments.
+print len(sys.argv), sys.argv
+if len(sys.argv) == 9:
+    interactive = False
+    all_args = sys.argv[1:9]
+    z1,a1,z2,a2,amin,amax,astep,e0 = [float(x) for x in all_args]
+    print z1,a1,z2,a2,amin,amax,astep,e0 
+else:
+    print 'Command-line usage:\nrutherford.py Zp Ap Zt At theta_min theta_max theta_step beam_energy'
+    print '  e.g. rutherford.py 54 136 74 186 10 170 1 800 > out.txt'
+    print '                     Zp  Ap Zt  At |angles| Ebeam (MeV)'
+    interactive = True
 # cnt is the angle of a normal from the target position to a planar detector.
 # disf is the distance along that normal from target to detector.
 
@@ -33,18 +47,16 @@ def get_floats(prompt_string = ''):
     temp_list   = temp_string.split()
     return [float(i) for i in temp_list]
 
-# z1,a1,z2,a2 = get_floats('Enter Zp,Ap (projectile), Zt,At (target) : ')
-z1,a1,z2,a2 = 54., 136., 78., 194.
+z1,a1,z2,a2 = get_floats('Enter Zp,Ap (projectile), Zt,At (target) : ')
 
 const1 = math.cos(math.radians(cnt))
 const2 = math.sin(math.radians(cnt))
 consta = math.cos(math.radians(cnt + 90.))
 constb = math.sin(math.radians(cnt + 90.))
 
-#amin,amax,astep = get_floats('Enter angles--min, max, step: ')
-amin,amax,astep = 10., 170., 5.
+amin,amax,astep = get_floats('Enter angles--min, max, step: ')
 
-print 'Set up for CHICO:\nAngle to normal is ' + str(cnt) + ' degrees.\nDistance to detector is ' + str(disf) + ' degrees.'
+print 'Time-of-flight difference will be calculated for CHICO:\nAngle to normal is ' + str(cnt) + ' degrees.\nDistance to detector is ' + str(disf) + ' degrees.'
 
 while True:
 
@@ -54,8 +66,7 @@ while True:
     recoil_theta_list = []
     recoil_timdi_list = []
 
-    # e0 = float(raw_input('Enter beam energy in MeV: '))
-    e0 = 610.
+    e0 = float(raw_input('Enter beam energy in MeV: '))
     print 'Beam energy is ' + str(e0) + ' MeV.'
 
     dsafe=1.25*(a1**(1.0/3.0)+a2**(1.0/3.0)) + 5.0  # Doug's safe criterion.
@@ -117,6 +128,7 @@ while True:
         dca = l*(1.0+(1.0/math.sin(math.radians(tcm/2.0))))
 
         # print theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio,beta1,beta2,timdi
+        print theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio,beta1,beta2,timdi
 # 77   format(f6.2,3x,f6.2,3x,f6.2,3x,f6.1,4x,f6.1,1x,
 #              e10.3,4x,e10.3,4x,e10.3,4x,e10.3,1x,e10.3,1x,e10.3)
 
