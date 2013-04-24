@@ -155,11 +155,12 @@ if thelim < 179.0:
         ruthl=ruthc*ratio
         dca=l*(1.0+(1.0/math.sin(math.radians(tcm/2.0))))
 
-        print '{0:6.2f}{1:8.2f}{2:8.2f}{3:11.2f}{4:8.2f}{5:15.2e}{6:15.2e}{7:15.2e}{8:8.3f}{9:8.3f}{10:16.2f}'.format(theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio)
+        # Add to lists for delta-TOF plot:
+        theta_list.append(theta)
+        timdi_list.append(timdi)
 
-#     12 format('theta',4x,'theta',4x,'theta',4x,'dist of  ',1x,'energy',1x,'dsigma/domega',1x,'dsigma/domega',1x,'dsigma/domega')
-#     121format('rec  ',4x,'scat ',4x,'rec  ',4x,'closest  ',1x,'in lab',1x,'c.o.m.       ',1x,'laboratory   ',1x,'lab/c.o.m.   ')
-#     122format('lab  ',4x,'lab  ',4x,'c.o.m.',3x,'appr (fm)',1x,'(MeV) ',1x,'(mb/sr)      ',1x,'(mb/sr)      ',1x,'(1)          ')
+        print '{0:6.2f}{1:8.2f}{2:8.2f}{3:11.2f}{4:8.2f}{5:15.2e}{6:15.2e}{7:15.2e}'.format(theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio)
+
 
 # Recoiling target.
 header = [
