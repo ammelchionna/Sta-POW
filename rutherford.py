@@ -77,7 +77,7 @@ l=1.43990*z1*z2/(2*ecm)
 
 thelim=180.
 if a1 >= a2:
-    thelim = math.radians(math.asin(a2/a1))
+    thelim = math.degrees(math.asin(a2/a1))
 
 print 'Maximum scattering angle in lab frame is ' + str(thelim) + ' degrees.'
 
