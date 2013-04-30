@@ -24,7 +24,6 @@ import pylab
 import sys
 
 # Check to see if the user gave command line arguments.
-print len(sys.argv), sys.argv
 if len(sys.argv) == 9:
     interactive = False
     all_args = sys.argv[1:9]
@@ -199,7 +198,7 @@ for theta in numpy.linspace(amin, min(amax,89.), int((min(amax,89.) - amin) / as
     tcmscat=thetb+math.degrees(math.asin(a1*math.sin(math.radians(thetb))/a2))
     dca=l*(1.0+(1.0/math.sin(math.radians(tcmscat/2.0))))
 
-    print '{0:6.2f}{1:8.2f}{2:8.2f}{3:11.2f}{4:8.2f}{5:15.2e}{6:15.2e}{7:15.2e}{8:8.3f}{9:8.3f}{10:16.2f}'.format(theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio,beta1,beta2,timdi)
+    print '{0:6.2f}{1:8.2f}{2:8.2f}{3:11.2f}{4:8.2f}{5:15.2e}{6:15.2e}{7:15.2e}{8:8.3f}{9:8.3f}{10:16.2f}'.format(theta,thetb,tcm,dca,e1,ruthc,ruthl,ratio,beta2,beta1,timdi)
 
     # Add to lists for delta-TOF plot:
     recoil_theta_list.append(theta)
